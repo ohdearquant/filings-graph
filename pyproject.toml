@@ -1,0 +1,24 @@
+[project]
+name = "filings-graph"
+version = "0.1.0"
+description = "A company and ownership graph from SEC filings, stored in khive"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "lionagi>=0.35.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/filings_graph"]
+
+[tool.ruff]
+line-length = 110

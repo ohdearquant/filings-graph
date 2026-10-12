@@ -1,0 +1,9 @@
+.venv/
+data/external/
+data/gold/
+.khive/*.db*
+.khive/khived-*
+prints/
+__pycache__/
+.khive/
+.kkernel/
