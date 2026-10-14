@@ -3,6 +3,10 @@
 #   scripts/build_store.sh filings-graph-v0
 # Refuses to replace an existing archive or store of that name (archive() does too).
 set -euo pipefail
+# The embedding model is downloaded on first use into ~/.lattice/models, with directories made under this
+# shell's umask, and the model loader refuses a file below a group-writable directory. A stock Ubuntu
+# account has umask 0002, so set 022 before anything here creates a directory.
+umask 022
 NAME="${1:?store name, e.g. filings-graph-v0}"
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 ROOT="$PWD"

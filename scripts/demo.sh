@@ -4,6 +4,10 @@
 # and network access to sec.gov.
 #   FILINGS_GRAPH_CONTACT=you@example.com bash scripts/demo.sh [number of companies, default 3]
 set -euo pipefail
+# The embedding model is downloaded on first use into ~/.lattice/models, with directories made under this
+# shell's umask, and the model loader refuses a file below a group-writable directory. A stock Ubuntu
+# account has umask 0002, so set 022 before anything here creates a directory.
+umask 022
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
