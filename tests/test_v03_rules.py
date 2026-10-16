@@ -202,7 +202,7 @@ def test_departed_rows_are_the_thirteen_filer_lineage_exits(cached_archive):
         )
 
 
-def test_seventeen_round_one_false_departures_are_live(cached_archive):
+def test_seventeen_false_departures_are_live(cached_archive):
     entities = _entities(cached_archive)
     expected = [
         ("Brian Chesky", "Airbnb", 13.6, "0001193125-26-352825"),

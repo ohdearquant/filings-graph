@@ -16,7 +16,7 @@ from filings_graph.proxy import parse_ownership_tables_audited
 
 ROOT = Path(__file__).resolve().parents[1]
 PULL_DIR = ROOT / "data/external/filings-graph/pull-v0.2"
-ROUND2A_PULL_DIR = ROOT / "data/external/filings-graph/pull-v0.3"
+PULL_DIR_V03 = ROOT / "data/external/filings-graph/pull-v0.3"
 UNIVERSE = ROOT / "data/universe.csv"
 PAY_CASES = {
     "0000354190": ("Pat Gallagher", 550.0, "Target Percent of Salary", 5),
@@ -35,8 +35,8 @@ def _cached_proxy(cik: str) -> str:
     return raw.decode("utf-8", "replace")
 
 
-def _round2a_cached_proxy(cik: str, accession: str) -> str:
-    record = json.loads((ROUND2A_PULL_DIR / f"{cik}.json").read_text())
+def _cached_proxy_v03(cik: str, accession: str) -> str:
+    record = json.loads((PULL_DIR_V03 / f"{cik}.json").read_text())
     filing = record["proxy"]
     assert filing["accession"] == accession
     raw = Edgar(offline=True).document(cik, accession, filing["primary_document"])
@@ -131,7 +131,7 @@ def test_five_percent_section_labels_are_accepted_from_cached_filings():
         ),
     ]
     for cik, accession, expected in cases:
-        rows, _, _ = parse_ownership_tables_audited(_round2a_cached_proxy(cik, accession))
+        rows, _, _ = parse_ownership_tables_audited(_cached_proxy_v03(cik, accession))
         got = {row.name: (row.pct, row.shares) for row in rows}
         for name, value in expected.items():
             assert got.get(name) == value, (cik, name, got.get(name))
@@ -139,7 +139,7 @@ def test_five_percent_section_labels_are_accepted_from_cached_filings():
 
 @pytest.mark.needs_local_data
 def test_first_class_column_is_not_mistaken_for_the_holder():
-    rows, _, _ = parse_ownership_tables_audited(_round2a_cached_proxy("0000080424", "0001193125-26-372211"))
+    rows, _, _ = parse_ownership_tables_audited(_cached_proxy_v03("0000080424", "0001193125-26-372211"))
     got = {row.name: row for row in rows}
     assert got["Vanguard Capital Management"].pct == 7.52
     assert got["Vanguard Capital Management"].shares == 174_810_071
@@ -164,7 +164,7 @@ def test_title_of_class_caption_does_not_shift_multiclass_owner_rows():
 
 @pytest.mark.needs_local_data
 def test_pge_class_column_keeps_common_and_preferred_holders():
-    rows, _, _ = parse_ownership_tables_audited(_round2a_cached_proxy("0001004980", "0001004980-26-000020"))
+    rows, _, _ = parse_ownership_tables_audited(_cached_proxy_v03("0001004980", "0001004980-26-000020"))
     got = {row.name: row for row in rows}
     for name, pct, shares in (
         ("FMR LLC", 6.0, 132_160_040),
@@ -181,7 +181,7 @@ def test_pge_class_column_keeps_common_and_preferred_holders():
 
 @pytest.mark.needs_local_data
 def test_synopsys_connector_line_continues_name_and_resolves_blackrock(tmp_path):
-    rows, _, _ = parse_ownership_tables_audited(_round2a_cached_proxy("0000883241", "0000883241-26-000007"))
+    rows, _, _ = parse_ownership_tables_audited(_cached_proxy_v03("0000883241", "0000883241-26-000007"))
     assert any(
         row.name == "Entities associated with BlackRock, Inc." and row.pct == 6.2 and row.shares == 11_788_658
         for row in rows
@@ -205,7 +205,7 @@ def test_synopsys_connector_line_continues_name_and_resolves_blackrock(tmp_path)
 
 @pytest.mark.needs_local_data
 def test_percent_without_sign_below_five_is_suspect_when_shares_contradict():
-    rows, _, _ = parse_ownership_tables_audited(_round2a_cached_proxy("0000874766", "0000874766-26-000025"))
+    rows, _, _ = parse_ownership_tables_audited(_cached_proxy_v03("0000874766", "0000874766-26-000025"))
     blackrock = next(row for row in rows if row.name == "BlackRock, Inc.")
     assert blackrock.pct == 0.085
     assert blackrock.suspect
